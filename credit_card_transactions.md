@@ -15,3 +15,12 @@ it reaches a cumulative of 1000000 total spends
 
 4- write a query to find city which had lowest percentage spend for gold card type
 <img width="240" alt="credit-card-analysis-4" src="https://github.com/yashasbharadwaj1/sql-case-studies/assets/71028991/a4646520-eca7-42ce-9853-bdaf36f6c783">
+
+5- write a query to print 3 columns:  city, highest_expense_type , 
+lowest_expense_type (example format : Delhi , bills, Fuel) 
+
+
+
+6- write a query to find percentage contribution of spends by females for each expense type
+
+

@@ -138,6 +138,17 @@ from q2
 group by city;
 
 
+/*
+6- write a query to find percentage contribution of spends by females for each expense type
+*/
+
+select exp_type,
+sum(case when gender='F' then amount else 0 end)*1.0/sum(amount) as percentage_female_contribution
+from credit_card_transactions
+group by exp_type
+order by percentage_female_contribution desc;
+
+
 -- Basic findouts
 select distinct(card_type) from credit_card_transactions;
 /*
