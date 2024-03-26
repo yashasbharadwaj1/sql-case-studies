@@ -27,3 +27,6 @@ lowest_expense_type (example format : Delhi , bills, Fuel)
 <img width="746" alt="credit-card-analysis-6" src="https://github.com/yashasbharadwaj1/sql-case-studies/assets/71028991/fc977dab-4557-4524-9d9b-66b5538a9fb1">
 
 7- which card and expense type combination saw highest month over month growth in Jan-2014 
+<img width="584" alt="credit-card-analysis-7" src="https://github.com/yashasbharadwaj1/sql-case-studies/assets/71028991/22ba7701-d66a-48cf-a766-decd9ace966f">
+
+
