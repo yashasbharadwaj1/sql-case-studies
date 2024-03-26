@@ -113,6 +113,30 @@ order by gold_ratio
 limit 1
 
 
+/*
+5- write a query to print 3 columns:  city, highest_expense_type , 
+lowest_expense_type (example format : Delhi , bills, Fuel)
+*/
+
+with q1 as 
+(
+select city,exp_type, sum(amount) as total_amount from credit_card_transactions
+group by city,exp_type
+),
+q2 as 
+(
+select *
+,rank() over(partition by city order by total_amount desc) rn_desc
+,rank() over(partition by city order by total_amount asc) rn_asc
+from q1
+)
+select
+city , 
+max(case when rn_asc=1 then exp_type end) as lowest_exp_type,
+min(case when rn_desc=1 then exp_type end) as highest_exp_type
+from q2
+group by city;
+
 
 -- Basic findouts
 select distinct(card_type) from credit_card_transactions;
