@@ -19,8 +19,10 @@ it reaches a cumulative of 1000000 total spends
 5- write a query to print 3 columns:  city, highest_expense_type , 
 lowest_expense_type (example format : Delhi , bills, Fuel) 
 
+<img width="693" alt="credit-card-analysis-5" src="https://github.com/yashasbharadwaj1/sql-case-studies/assets/71028991/214ea51c-96f7-44da-8e79-7a9a2c3a857d">
 
 
 6- write a query to find percentage contribution of spends by females for each expense type
 
+<img width="746" alt="credit-card-analysis-6" src="https://github.com/yashasbharadwaj1/sql-case-studies/assets/71028991/fc977dab-4557-4524-9d9b-66b5538a9fb1">
 
