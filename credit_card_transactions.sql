@@ -148,6 +148,28 @@ from credit_card_transactions
 group by exp_type
 order by percentage_female_contribution desc;
 
+/*
+7- which card and expense type combination saw highest month over month growth in Jan-2014
+*/
+
+with q1 as (
+select card_type,exp_type,date_part('year',transaction_date) yt
+,date_part('month',transaction_date) mt,sum(amount) as total_spend
+from credit_card_transactions
+group by card_type,exp_type,date_part('year',transaction_date),date_part('month',transaction_date)
+),
+q2 as 
+(
+select *,
+lag(total_spend,1) over(partition by card_type,exp_type order by yt,mt) as prev_month_spend
+from q1
+)
+select card_type,exp_type,(total_spend-prev_month_spend) as mom_growth
+from q2
+where prev_month_spend is not null and yt=2014 and mt=1
+group by card_type,exp_type,mom_growth
+order by mom_growth desc;
+
 
 -- Basic findouts
 select distinct(card_type) from credit_card_transactions;
