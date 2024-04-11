@@ -67,7 +67,7 @@ each season)
 */
 
 -- source :- https://captaincalculator.com/sports/cricket/batting-average-calculator/
--- Batting Average = Runs Scored ÷ Times Out 
+-- Batting Average = Runs Scored Ã· Times Out 
 
 with q1 as 
 (
@@ -80,76 +80,75 @@ q2 as
 (
 select batsmanName,
 match_year,
-sum(balls) as sum_of_balls,
 round(cast(sum(runs) as float)/cast((sum(case when out_not_out='out' then 1 else 0 end)* 1.0) as float) 
 ,2)
-as batting_average
+as batting_average,
+sum(balls) as sum_of_balls
 from q1 
 group by batsmanName,match_year 
-having sum(balls) >= 60
+having SUM(balls) >= 60
+),
+q3 as 
+(
+select batsmanName,
+match_year,
+batting_average
+from q2
+where batsmanName in (
+select batsmanName 
+from q2
+group by batsmanName
+having count(distinct match_year) = 3)
 )
 select top 10 batsmanName,round(avg(batting_average),2) as overall_batting_average
-from q2 
+from q3 
 group by batsmanName 
 order by overall_batting_average desc
 
-/*
-My followup  
-2.a Top 10 batsmen of every year based on batting average. (min 60 balls faced in
-each season)
-*/
-
-with q1 as 
-(
-select ms.match_year,bs.*
-from dim_match_summary_transformed ms
-inner join fact_bating_summary bs 
-on ms.match_id = bs.match_id
-),
-q2 as
-(
-select batsmanName,
-match_year,
-sum(balls) as sum_of_balls,
-round(cast(sum(runs) as float)/cast((sum(case when out_not_out='out' then 1 else 0 end)* 1.0) as float) 
-,2)
-as batting_average
-from q1 
-group by batsmanName,match_year 
-having sum(balls) >= 60
-)
-
-
-/*
-select top 10 batsmanName,batting_average 
-into top_10_batsmen_based_on_batting_average_in_2021   
-from q2 
-where match_year = 2021
-order by batting_average desc,match_year
----
-select top 10 batsmanName,batting_average 
-into top_10_batsmen_based_on_batting_average_in_2022   
-from q2 
-where match_year = 2022
-order by batting_average desc,match_year
----
-select top 10 batsmanName,batting_average 
-into top_10_batsmen_based_on_batting_average_in_2023   
-from q2 
-where match_year = 2023
-order by batting_average desc,match_year
-*/
-
-
-select * from top_10_batsmen_based_on_batting_average_in_2021
-select * from top_10_batsmen_based_on_batting_average_in_2022
-select * from top_10_batsmen_based_on_batting_average_in_2023
 
 /*
 3. Top 10 batsmen based on past 3 years strike rate (min 60 balls faced in each
 season)
+
+--source https://www.geeksforgeeks.org/how-to-calculate-strike-rate-of-a-batsman/
+Strike Rate = (Runs Scored / Balls faced) * 100 
 */
 
+
+with q1 as 
+(
+select ms.match_year,bs.*
+from dim_match_summary_transformed ms
+inner join fact_bating_summary bs 
+on ms.match_id = bs.match_id
+),
+q2 as
+(
+select batsmanName,
+match_year,
+ROUND(( cast(SUM(runs) * 100.0 as float ) / SUM(balls) * 1.0), 2)  as sr,
+sum(balls) as sum_of_balls
+from q1 
+group by batsmanName,match_year
+having SUM(balls) >= 60
+),
+q3 as 
+(
+select batsmanName,
+match_year,
+sr
+from q2
+where batsmanName in (
+select batsmanName 
+from q2
+group by batsmanName
+having count(distinct match_year) = 3)
+)
+select top 10 batsmanName,
+round(avg(sr),2) as avg_sr
+from q3 
+group by batsmanName 
+order by avg_sr desc
 
 /*
 4. Top 10 bowlers based on past 3 years total wickets taken
@@ -169,3 +168,169 @@ each season)
 -- Bowling Average = (Total Runs Conceded)/(Total Wickets Taken) 
 
 
+with q1 as 
+(
+select ms.match_year,bs.*
+from dim_match_summary_transformed ms
+inner join fact_bowling_summary bs 
+on ms.match_id = bs.match_id
+),
+q2 as 
+(
+select bowlerName,match_year,
+round((sum(runs)/ (sum(wickets)*1.0)),2) as bowling_average
+from q1
+group by bowlerName,match_year
+having sum(overs) * 6 >= 60
+),
+q3 as 
+(
+select * 
+from q2
+where bowlerName in (
+select bowlerName 
+from q2
+group by bowlerName
+having count(distinct match_year) = 3)
+)
+select top 10 bowlerName,
+round(avg(bowling_average),2) as overall_avg
+from q3 
+group by bowlerName
+order by overall_avg 
+
+
+/*
+6. Top 10 bowlers based on past 3 years economy rate. (min 60 balls bowled in
+each season)
+--source - https://sports.icalculator.com/cricket-economy-rate-calculator.html 
+Economy Rate = Total Runs Conceded / Total Overs Bowled
+*/ 
+
+with q1 as 
+(
+select ms.match_year,bs.*
+from dim_match_summary_transformed ms
+inner join fact_bowling_summary bs 
+on ms.match_id = bs.match_id
+),
+q2 as 
+(
+select bowlerName,match_year,
+round((sum(runs)/sum(overs)*1.0),2) as economy_rate
+from q1
+group by bowlerName,match_year
+having sum(overs) * 6 >= 60
+),
+q3 as 
+(
+select *
+from q2
+where bowlerName in (
+select bowlerName 
+from q2
+group by bowlerName
+having count(distinct match_year) = 3)
+)
+select top 10 bowlerName,
+round(avg(economy_rate),2) as avg_economy_rate
+from q3 
+group by bowlerName
+order by avg_economy_rate asc
+
+
+/*
+7. Top 5 batsmen based on past 3 years boundary % (fours and sixes).
+-- source https://madaboutsports.in/blog/glossary/boundaries-and-singles-percentages/ 
+Boundary Percentage = (Total Runs Scored through Boundaries / Total Runs Scored) x 100 
+*/ 
+
+with q1 as 
+(
+select ms.match_year,bs.*
+from dim_match_summary_transformed ms
+inner join fact_bating_summary bs 
+on ms.match_id = bs.match_id
+),
+q2 as
+(
+select q1.*,dim_players.playing_role 
+from q1 
+inner join dim_players 
+on q1.batsmanName = dim_players.name 
+where playing_role not in ('Bowler','Bowling Allrounder')
+),
+q3 as 
+(
+select *
+from q2
+where batsmanName in (
+select batsmanName
+from q2
+group by batsmanName
+having count(distinct match_year) = 3)
+),
+q4 as 
+(
+select batsmanName,
+sum(_4s)*4 + sum(_6s)*6 as total_runs_scored_through_boundaries,
+nullif(sum(runs),0) as total_runs_scored
+from q3
+group by batsmanName
+),
+q5 as 
+(
+select batsmanName,
+round(
+(cast(total_runs_scored_through_boundaries as float)/cast(total_runs_scored as float))*100.0
+,2) as boundary_percentage
+from q4 
+) 
+select top 5*
+from q5 
+order by boundary_percentage desc
+
+
+/*
+8. Top 5 bowlers based on past 3 years dot ball %. 
+source :- https://madaboutsports.in/blog/glossary/dot-ball-in-cricket/ 
+Dot ball percentage = (Number of dot balls bowled/Number of total deliveries bowled)x100
+*/ 
+
+with q1 as 
+(
+select ms.match_year,bs.*
+from dim_match_summary_transformed ms
+inner join fact_bowling_summary bs 
+on ms.match_id = bs.match_id
+),
+q2 as 
+(
+select *
+from q1
+where bowlerName in (
+select bowlerName 
+from q1
+group by bowlerName
+having count(distinct match_year) = 3)
+),
+q3 as 
+(
+select bowlerName,
+sum(_0s) as total_dot_balls,
+round(sum(overs *6),0) as total_balls
+from q2 
+group by bowlerName 
+)
+select top 5 bowlerName,
+round((total_dot_balls/total_balls) * 100 ,2)
+as dot_ball_percentage
+from q3
+order by dot_ball_percentage desc
+
+
+/*
+9. Top 4 teams based on past 3 years winning %.
+*/ 
+select * from 
+dim_match_summary_transformed
