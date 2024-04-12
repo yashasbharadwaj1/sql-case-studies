@@ -1,6 +1,7 @@
 
 USE Iplproject
-
+--IPL, 2024
+--22 March - 26 May
 /*
 select * from dim_match_summary
 transformation  on dim_match_summary
@@ -60,6 +61,61 @@ select top 10 batsmanName,sum(runs) as total_runs
 from fact_bating_summary 
 group by batsmanName 
 order by total_runs desc
+
+-- my followup analysis on question 1 
+-- top 5 batsman 2021
+select top 5 batsmanName,
+sum(runs) as total_runs,
+2021 as year
+into top_5_batsman_2021
+from 
+(
+select ms.match_year,bs.*
+from dim_match_summary_transformed ms
+inner join fact_bating_summary bs 
+on ms.match_id = bs.match_id 
+) a
+where match_year =2021
+group by batsmanName
+order by total_runs desc
+
+-- top 5 batsman 2022
+select top 5 batsmanName,
+sum(runs) as total_runs,
+2022 as year
+into top_5_batsman_2022
+from 
+(
+select ms.match_year,bs.*
+from dim_match_summary_transformed ms
+inner join fact_bating_summary bs 
+on ms.match_id = bs.match_id 
+) a
+where match_year =2022
+group by batsmanName
+order by total_runs desc
+
+-- top 5 batsman 2023
+select top 5  batsmanName,
+sum(runs) as total_runs,
+2023 as year
+into top_5_batsman_2023
+from 
+(
+select ms.match_year,bs.*
+from dim_match_summary_transformed ms
+inner join fact_bating_summary bs 
+on ms.match_id = bs.match_id 
+) a
+where match_year =2023
+group by batsmanName
+order by total_runs desc
+
+
+--select * from top_5_batsman_2021
+--select * from top_5_batsman_2022 
+--select * from top_5_batsman_2023 
+
 
 /*
 2. Top 10 batsmen based on past 3 years batting average. (min 60 balls faced in
@@ -331,6 +387,65 @@ order by dot_ball_percentage desc
 
 /*
 9. Top 4 teams based on past 3 years winning %.
+source :- https://www.quora.com/How-is-a-winning-percentage-calculated
+Winning Percentage = (Wins / Total Games Played) * 100
 */ 
-select * from 
-dim_match_summary_transformed
+--select * from dim_match_summary_transformed
+
+with all_teams as 
+(
+select team1 as team, case when team1=winner then 1 else 0 end as win_flag from dim_match_summary_transformed
+union all
+select team2 as team, case when team2=winner then 1 else 0 end as win_flag from dim_match_summary_transformed
+),
+q2 as 
+(
+select team,
+count(1) as total_matches_played , 
+sum(win_flag) as matches_won
+from all_teams
+group by team
+)
+select top 4 team,
+round((cast( matches_won as float)/cast (total_matches_played as float))*100 ,2)
+as winning_percentage
+from q2
+order by winning_percentage desc
+
+
+/*
+10.Top 2 teams with the highest number of wins achieved by chasing targets over
+the past 3 years.
+*/
+--select * from dim_match_summary_transformed 
+
+with q1 as 
+(
+select *,
+case 
+when margin LIKE '%runs' THEN 'defending'
+when margin LIKE '%wickets' THEN 'chasing'
+else 'unknown'
+end as winning_type
+from dim_match_summary_transformed
+),
+q2 as 
+(
+select * 
+from q1 
+where winning_type='chasing'
+),
+q3 as
+(
+select team1 as team, case when team1=winner then 1 else 0 end as win_flag from q2
+union all
+select team2 as team, case when team2=winner then 1 else 0 end as win_flag from q2
+)
+select top 2 team, 
+sum(win_flag) as matches_won
+from q3
+group by team
+
+
+
+
