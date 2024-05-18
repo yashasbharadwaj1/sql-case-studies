@@ -28,5 +28,7 @@ Insights Derived :-
 
  Results :- 
  Presentation link :-  
+ https://docs.google.com/presentation/d/e/2PACX-1vQEfSi-mjc_4xeSwN9paELXyo7dmBfbrcCFskrFKXp_BU3D_GwjebPVAAzrXP7t-c5pdS1WHRGzE4tv/pub?start=false&loop=false&delayms=3000 
+ 
  this contains sql code for each insight along with result 
 
