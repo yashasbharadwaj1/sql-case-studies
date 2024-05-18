@@ -27,8 +27,8 @@ The dataset can be accessed [here](https://codebasics.io/challenge/codebasics-re
 
 ## Results
 
-The detailed SQL code for each insight along with the results can be found in the presentation link below:
+The results can be found in the presentation link below:
 
 [Presentation Link](https://docs.google.com/presentation/d/e/2PACX-1vQEfSi-mjc_4xeSwN9paELXyo7dmBfbrcCFskrFKXp_BU3D_GwjebPVAAzrXP7t-c5pdS1WHRGzE4tv/pub?start=false&loop=false&delayms=3000)
 
-This presentation contains the SQL code for each insight along with the results.
+
